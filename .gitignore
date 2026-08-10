@@ -1,0 +1,10 @@
+# 环境变量 / 密钥文件，禁止提交
+.env
+.env.*
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
