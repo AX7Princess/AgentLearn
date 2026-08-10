@@ -1,5 +1,6 @@
 from openai import OpenAI
-client =OpenAI(api_key="sk-fd111bbe5e6c44bdbb833c444ee171c3",base_url="https://api.deepseek.com")
+import os
+client =OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"),base_url="https://api.deepseek.com")
 message=[{"role":"user","content":"你是哪个大模型"}]
 response=client.chat.completions.create(model="deepseek-v4-flash",messages=message,stream=True,reasoning_effort="low",extra_body={"thinking":{"type":"enabled"}},max_tokens=200,)
 reasoning_content=""
