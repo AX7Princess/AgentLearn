@@ -8,3 +8,6 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# 工具 / 编辑器元数据，禁止提交
+.workbuddy/
