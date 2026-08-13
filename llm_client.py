@@ -2,6 +2,7 @@ from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 import json,os,ast
 import urllib.request
+from pathlib import Path
 load_dotenv(override=True, dotenv_path=find_dotenv())
 
 class LLMClient():
@@ -15,8 +16,8 @@ class RealLLM(LLMClient):
             "openai": {"base_url": None, "key": "OPENAI_API_KEY", "model": "gpt-4o-mini"},
         }[provide]
         self.client = OpenAI(api_key=os.getenv(cfg["key"]), base_url=cfg["base_url"])
-        print(f"实际使用的 provider={provide}, key 尾号={os.getenv(cfg['key'])[-6:] if os.getenv(cfg['key']) else 'None'}")
-
+        print(f"实际使用的 provider={provide}, key 已加载={'是' if os.getenv(cfg['key']) else '否'}")
+       # print(repr(os.getenv(cfg["key"])))
         self.model=cfg["model"]
     def chat(self,messages,tools=None):
         return self.client.chat.completions.create(model=self.model,messages=messages,tools=tools)
@@ -62,11 +63,16 @@ def run_tool(name,arg):
 
 def fc_loop(question,llm,max_rounds=3):
    messages=[{"role":"user","content":question}]
+   tool_records = []   
    for _ in range(max_rounds):
         rep=llm.chat(messages,tools=TOOLS_SCHEMA)
         msg=rep.choices[0].message
         if not msg.tool_calls:
-            return msg.content
+            return {
+                "answer": msg.content,     # 最终答案
+                "tool_records": tool_records,   # [] = 没调工具(模型猜的!)
+            }
+            #return msg.content
         messages.append(msg)
         for tc in msg.tool_calls:
             try:
@@ -75,8 +81,10 @@ def fc_loop(question,llm,max_rounds=3):
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": f"参数解析失败:{e}"})
                 continue
             result=run_tool(tc.function.name,arg)
-        messages.append({"role":"tool","tool_call_id":tc.id,"content":result})
-   return "达到最大访问次数"
+            tool_records.append({"tool": tc.function.name, "args": arg, "result": result})
+            messages.append({"role":"tool","tool_call_id":tc.id,"content":result})
+            print(msg)
+   return {"answer": "达到最大轮数", "tool_records": tool_records}
 
 
    
@@ -86,6 +94,7 @@ def get_weather(city:str)->str:#查询天气
     city_encoded = urllib.parse.quote(city)          # 深圳 → %E6%B7%B1%E5%9C%B3
     url = f"https://wttr.in/{city_encoded}?format=3"
       # 返回简短的天气文本
+    print(url)
     return urllib.request.urlopen(url).read().decode()
 
 def calculator(expr: str) -> str:#四则运算
@@ -100,6 +109,7 @@ TOOLS_SCHEMA = [
 ]
 
 if __name__=="__main__":
-    load_dotenv(override=True, dotenv_path=find_dotenv())
+    
     llm = RealLLM("deepseek")
-    print(fc_loop("天津天气怎么样", llm))
+  # 真实 DeepSeek 下问一个同时触发两个工具的问题
+    print(fc_loop("天津天气怎么样？顺手算一下 23+5", llm))

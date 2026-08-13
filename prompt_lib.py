@@ -1,4 +1,5 @@
 from openai import OpenAI
+from llm_client import fc_loop, RealLLM
 import os
 
 client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
@@ -71,14 +72,15 @@ def few_shot_prompt(question,examples=DEFAULT_EXAMPLES,system_prompt="你是擅�
     return msgs
 
 def react_prompt(question,system_prompt="你是以为多种能小助手",tools="搜索引擎、计算器"):
-    u=(f"可用工具:{tools}。严格按格式回答：\n"
-       f"Thought:先根据用户问题想清楚要干什么\n"
-       f"Action:调用哪个工具更适合该问题\n"
-       f"Action Input:参数\n"
-       f"Observation:工具返回结果\n"
-       f"Answer:最终答案\n\n问题:{question}"     
-    )
-    return [{"role": "system", "content": system_prompt}, {"role": "user", "content": u}]
+   # u=(f"可用工具:{tools}。严格按格式回答：\n"
+    #   f"Thought:先根据用户问题想清楚要干什么\n"
+   #    f"Action:调用哪个工具更适合该问题\n"
+   #    f"Action Input:参数\n"
+   #    f"Observation:工具返回结果\n"
+   #    f"Answer:最终答案\n\n问题:{question}"     
+   # )
+    #return [{"role": "system", "content": system_prompt}, {"role": "user", "content": u}]
+    return fc_loop(question, RealLLM("deepseek")) 
 
 BUILDERS = {"cot": cot_prompt, "few_shot": few_shot_prompt, "react": react_prompt}
 
@@ -98,6 +100,16 @@ def run_mode(mode,question,**kw):
     if mode =="tot":
         schemes, scores, best = tot_solve(question, n=kw.get("n", 3))
         return f"【方案】\n{schemes}\n\n【评审】\n{scores}\n\n【决策】\n{best}"
+    if mode =="react":
+        out = react_prompt(question) 
+        if out["tool_records"]:
+        # 展示调用记录
+            print("工具调用记录:", out["tool_records"])
+        else:
+         # ⚠️ 模型没调工具,可能是在猜(幻觉风险)
+            print("警告:模型未调用任何工具,回答可能为模型推断")
+        return out["answer"]
+         #return fc_loop(question, RealLLM("deepseek")) 
     if mode not in BUILDERS:
           raise ValueError(f"未知模式:{mode},可选 {list(BUILDERS) + ['tot']}")
     msgs = BUILDERS[mode](question, **kw)
