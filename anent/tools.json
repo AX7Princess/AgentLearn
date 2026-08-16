@@ -1,0 +1,31 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "description": "查天气",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" }
+        },
+        "required": ["latitude", "longitude"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculator",
+      "description": "四则运算",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "expr": { "type": "string" }
+        },
+        "required": ["expr"]
+      }
+    }
+  }
+]
