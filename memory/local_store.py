@@ -1,18 +1,22 @@
-import sqlite3, json
-from pathlib import Path
-BASE = Path(__file__).parent
+"""
+本地文件存储
+"""
+import json,os
+from memory.paths import FACTS_JSON
+def local_facts(path=FACTS_JSON):
+    if os.path.exists(path):
+        with open(path,encoding="utf-8") as f:
+            return json.load(f)
 
-class ProfileStore:
-    def __init__(self,db_path=str(BASE / "memory.db")):
-        self.con=sqlite3.connect(db_path)
-        self.con.execute("CREATE TABLE IF NOT EXISTS profile (k TEXT PRIMARY KEY, v TEXT)")
-        self.con.commit()
+    return {}
 
-    def set_profile(self, k, v):
-        self.con.execute("INSERT OR REPLACE INTO profile VALUES(?,?)",(k,json.dumps(v)))
+def save_fact(k,v,path=FACTS_JSON):
+    d=local_facts(path)
+    d[k]=v
+    with open(path,"w",encoding="utf-8") as f:
+        json.dump(d,f,ensure_ascii=False,indent=2)
+    return d
 
-    def get_profile(self,k):
-        row=self.con.execute("SELECT v FROM profile WHERE k=?",(k,)).fetchone()
-        return json.loads(row[0]) if row else None
-
-    
+if __name__=="__main__":
+    save_fact("them","浅色模式")
+    print("读回",local_facts())

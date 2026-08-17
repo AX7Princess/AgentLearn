@@ -8,6 +8,11 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-
+mem_store/  
+*.db                
+# 第2条: 屏蔽所有 SQLite 数据库(memory.db 等)
+facts.json          
+# 第3条: 屏蔽纯文件事实层
+__pycache__/ 
 # WorkBuddy 项目数据目录（含记忆/日志/设置，禁止提交）
 .workbuddy/

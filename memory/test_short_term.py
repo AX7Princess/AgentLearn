@@ -1,5 +1,5 @@
 import pytest
-from short_term import ShortTermMemory
+from shortmemory import ShortTermMemory
 
 # ── ① 窗口测试:滑动窗口只回最近 N 条,且不改 buffer ──
 def test_window_returns_recent():
