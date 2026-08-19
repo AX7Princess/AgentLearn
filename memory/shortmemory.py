@@ -11,7 +11,7 @@ class ShortTermMemory:
     def add(self,msg:dict):#消息缓存
         self.buffer.append(msg)
 
-    def context(self)->list[dict]: # 返回最近n条消息
+    def context(self)->list[dict]: # 返回最近n条消息，滑动窗口
         sys_msgs=[m for m in self.buffer if m.get("role") in self.system_roles]
         others=[m for m in self.buffer if m.get("role") not in self.system_roles]
         return sys_msgs+others[-self.window:]
