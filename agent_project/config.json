@@ -1,0 +1,20 @@
+{
+  "providers": {
+    "deepseek": {
+      "base_url": "https://api.deepseek.com",
+      "key_env": "DEEPSEEK_API_KEY",
+      "model": "deepseek-v4-flash"
+    },
+    "kimi": {
+      "base_url": "https://api.moonshot.cn/v1",
+      "key_env": "MOONSHOT_API_KEY",
+      "model": "kimi-k2.6"
+    }
+  },
+  "tools": [
+    { "module": "tools.weather", "class": "WeatherTool" },
+    { "module": "tools.calculator", "class": "CalculatorTool" },
+    { "module": "tools.save_preference", "class": "SavePreferenceTool" },
+    { "module": "tools.recall_memory", "class": "RecallMemoryTool" }
+  ]
+}
